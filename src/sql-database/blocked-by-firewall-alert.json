@@ -1,0 +1,134 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "alertRuleName": {
+            "defaultValue": "SQL Database - Blocked by Firewall",
+            "type": "String"
+        },
+        "alertRuleDescription": {
+            "defaultValue": "Trigger alert when there is connection to SQL Database and is blocked by firewall.",
+            "type": "String"
+        },
+        "threshold": {
+            "defaultValue": 1,
+            "type": "int"
+        },
+        "scopeResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "The scope to monitor. For example, monitoring can be at subscription level or as granular as resource (SQL Database) level."
+            }
+        },
+        "targetResourceRegion": {
+            "type": "array",
+            "allowedValues": [
+                "eastus",
+                "eastus2",
+                "southcentralus",
+                "westus2",
+                "westus3",
+                "australiaeast",
+                "southeastasia",
+                "northeurope",
+                "swedencentral",
+                "uksouth",
+                "westeurope",
+                "centralus",
+                "northcentralus",
+                "westus",
+                "southafricanorth",
+                "centralindia",
+                "eastasia",
+                "japaneast",
+                "jioindiawest",
+                "koreacentral",
+                "canadacentral",
+                "francecentral",
+                "germanywestcentral",
+                "norwayeast",
+                "switzerlandnorth",
+                "uaenorth",
+                "brazilsouth",
+                "centralusstage",
+                "eastusstage",
+                "eastus2stage",
+                "northcentralusstage",
+                "southcentralusstage",
+                "westusstage",
+                "westus2stage",
+                "asia",
+                "asiapacific",
+                "australia",
+                "brazil",
+                "canada",
+                "europe",
+                "global",
+                "india",
+                "japan",
+                "uk",
+                "unitedstates",
+                "eastasiastage",
+                "southeastasiastage",
+                "centraluseuap",
+                "eastus2euap",
+                "westcentralus",
+                "southafricawest",
+                "australiacentral",
+                "australiacentral2",
+                "australiasoutheast",
+                "japanwest",
+                "jioindiacentral",
+                "koreasouth",
+                "southindia",
+                "westindia",
+                "canadaeast",
+                "francesouth",
+                "germanynorth",
+                "norwaywest",
+                "swedensouth",
+                "switzerlandwest",
+                "ukwest",
+                "uaecentral",
+                "brazilsoutheast"
+            ]
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "[parameters('alertRuleName')]",
+            "location": "global",
+            "properties": {
+                "description": "[parameters('alertRuleDescription')]",
+                "severity": 3,
+                "enabled": true,
+                "scopes": [
+                    "[parameters('scopeResourceId')]"
+                ],
+                "evaluationFrequency": "PT1M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "threshold": "[parameters('threshold')]",
+                            "name": "Metric1",
+                            "metricNamespace": "microsoft.sql/servers/databases",
+                            "metricName": "blocked_by_firewall",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Total",
+                            "criterionType": "StaticThresholdCriterion"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Sql/servers/databases",
+                "targetResourceRegion": "[parameters('targetResourceRegion')]",
+                "actions": []
+            }
+        }
+    ]
+}

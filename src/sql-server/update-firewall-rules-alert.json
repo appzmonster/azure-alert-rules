@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "alertRuleName": {
+            "defaultValue": "SQL Server - Update firewall rules",
+            "type": "String"
+        },
+        "alertRuleDescription": {
+            "defaultValue": "Trigger alert when SQL Server updates firewall rules.",
+            "type": "String"
+        },
+        "scopeResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "The scope to monitor. For example, monitoring can be at subscription level or as granular as resource (SQL Server) level."
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "microsoft.insights/activityLogAlerts",
+            "apiVersion": "2020-10-01",
+            "name": "[parameters('alertRuleName')]",
+            "location": "Global",
+            "properties": {
+                "scopes": [
+                    "[parameters('scopeResourceId')]"
+                ],
+                "condition": {
+                    "allOf": [
+                        {
+                            "field": "category",
+                            "equals": "Administrative"
+                        },
+                        {
+                            "field": "resourceType",
+                            "equals": "microsoft.sql/servers"
+                        },
+                        {
+                            "field": "operationName",
+                            "equals": "Microsoft.Sql/servers/firewallRules/write"
+                        },
+                        {
+                            "field": "level",
+                            "containsAny": [
+                                "informational"
+                            ]
+                        },
+                        {
+                            "field": "status",
+                            "containsAny": [
+                                "succeeded"
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "actionGroups": []
+                },
+                "enabled": true,
+                "description": "[parameters('alertRuleDescription')]"
+            }
+        }
+    ]
+}

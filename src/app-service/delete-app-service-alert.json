@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "alertRuleName": {
+            "defaultValue": "Resource Group - Delete app service",
+            "type": "String"
+        },
+        "alertRuleDescription": {
+            "defaultValue": "Trigger alert whenever an app service is deleted from the resource group.",
+            "type": "String"
+        },
+        "resourceGroupResourceId": {
+            "type": "String",
+            "metadata": {
+                "desscription": "The resource group of which the alert will attach to monitor for delete app service event."
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "microsoft.insights/activityLogAlerts",
+            "apiVersion": "2020-10-01",
+            "name": "[parameters('alertRuleName')]",
+            "location": "Global",
+            "properties": {
+                "scopes": [
+                    "[parameters('resourceGroupResourceId')]"
+                ],
+                "condition": {
+                    "allOf": [
+                        {
+                            "field": "category",
+                            "equals": "Administrative"
+                        },
+                        {
+                            "field": "resourceType",
+                            "equals": "microsoft.web/sites"
+                        },
+                        {
+                            "field": "operationName",
+                            "equals": "Microsoft.Web/sites/Delete"
+                        },
+                        {
+                            "field": "level",
+                            "containsAny": [
+                                "informational"
+                            ]
+                        },
+                        {
+                            "field": "status",
+                            "containsAny": [
+                                "succeeded"
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "actionGroups": []
+                },
+                "enabled": true,
+                "description": "[parameters('alertRuleDescription')]"
+            }
+        }
+    ]
+}

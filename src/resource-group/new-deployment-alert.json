@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "alertRuleName": {
+            "defaultValue": "Resource Group - New deployment",
+            "type": "String"
+        },
+        "alertRuleDescription": {
+            "defaultValue": "Trigger alert whenever the resource group has a new deployment.",
+            "type": "String"
+        },
+        "scopeResourceId": {
+            "type": "String",
+            "metadata": {
+                "desscription": "The resource group or subscription to monitor for new deployment event."
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "microsoft.insights/activityLogAlerts",
+            "apiVersion": "2020-10-01",
+            "name": "[parameters('alertRuleName')]",
+            "location": "Global",
+            "properties": {
+                "scopes": [
+                    "[parameters('scopeResourceId')]"
+                ],
+                "condition": {
+                    "allOf": [
+                        {
+                            "field": "category",
+                            "equals": "Administrative"
+                        },
+                        {
+                            "field": "resourceType",
+                            "equals": "microsoft.resources/deployments"
+                        },
+                        {
+                            "field": "operationName",
+                            "equals": "Microsoft.Resources/deployments/write"
+                        },
+                        {
+                            "field": "level",
+                            "containsAny": [
+                                "informational"
+                            ]
+                        },
+                        {
+                            "field": "status",
+                            "containsAny": [
+                                "succeeded"
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "actionGroups": []
+                },
+                "enabled": true,
+                "description": "[parameters('alertRuleDescription')]"
+            }
+        }
+    ]
+}
